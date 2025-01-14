@@ -61,6 +61,70 @@
 		* Changes the state in list
 		* Removes it from the list and frees the memory
 
+## Passing arguments to Linux Device Driver
+
+### Module Parameters Macros
+
+* module_param()
+* module_param_array()
+* module_param_cb()
+
+#### module_param()
+
+* This macro is used to initialize the arguments. Following is the syntax:
+```
+module_param(name, type, perm); //defined in linux/module_param.h
+```
+* This macro will create subdirectory under /sys/module. For example
+```
+module_param(valueETX, int, S_IWUSR|S_IRUSR);
+/* This will create a sysfs entry in 
+(/sys/module/hello_world_module/parameters/valueETX)*/
+```
+
+#### module_param_array()
+
+* This macro is used to send the array as an argument to the Linux device driver.
+  Array parameters, where the values are supplied as a comma-separated list, are also
+  supported by the module loader. Following is the syntax:
+```
+module_param_array(name,type,num,perm);
+```
+
+#### module_param_cb()
+
+* This macro is used to register the callback. Whenever the argument (parameter)
+  got changed, this callback function will be called. This is mainly used to notify 
+  the kernel, so that it will change any dependent operations related to this 
+  parameter (like modifying the register setting data). This macro is defined as follows
+```
+module_param_cb(name, kernel_ops, arg, permission);
+```
+* If you want to get a notification whenever the value got to change, we need to register
+  our handler function to its file operation structure first.
+```
+struct kernel_param_ops 
+{
+ int (*set)(const char *val, const struct kernel_param *kp);
+ int (*get)(char *buffer, const struct kernel_param *kp);
+ void (*free)(void *arg);
+};
+```
+
+#### Permission flags
+
+* S_IWUSR
+* S_IRUSR
+* S_IXUSR
+* S_IRGRP
+* S_IWGRP
+* S_IXGRP
+
+In this S_I is common and R=read , W=write, X=execute
+
+
+
+
 ## References
 * [Linux Device Drivers 3](https://www.oreilly.com/library/view/understanding-the-linux/0596005652/apbs03.html#:~:text=A%20user%20can%20link%20a,in%20the%20system%20directory%20tree)
 * [init and exit macros](https://fastbitlab.com/linux-device-driver-programming-lecture-18-__init-and-__exit-macros/)

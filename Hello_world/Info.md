@@ -182,6 +182,65 @@ int alloc_chrdev_region(dev_t *dev, unsigned int firstminor, unsigned int count,
 void unregister_chrdev_region(dev_t first, unsigned int count);
 ```
 
+## Creating the Device file
+
+We can create the device file in two ways.
+1. Manually
+2. Automatically
+
+### Manually Creating Device File
+
+```
+mknod -m <permissions> <name> <device type> <major> <minor>
+Example:
+    sudo mknod -m 666 /dev/etx_device c 246 0
+```
+
+### Automatically Creating the Device File
+
+The automatic creation of device files can be handled by the udev. Udev is the device manager 
+for the Linux kernel that creates/removes device node in the /dev directory dynamically. Just 
+follow the below steps
+
+1. Include the header file linux/device.h and linux/kdev_t.h
+2. Create the struct Class
+3. Create Device with the class which is created by the above step.
+
+#### Create class
+
+This will create the struct class for our device driver. It will create a structure under /sys/class/.
+
+```
+struct class * class_create(struct module *owner, const char *name);
+* owner – pointer to the module that is to “own” this struct class
+* name – pointer to a string for the name of this class
+```
+
+* This is used to create a struct class pointer that can then be used in calls to class_device_create.
+  The return value can be checked using IS_ERR() macro.
+* Note, the pointer created here is to be destroyed when finished by making a call to class_destroy.
+```
+void class_destroy (struct class * cls);
+```
+
+#### Create Device
+
+This function can be used by char device classes. A struct device will be created in sysfs, and registered to the specified class.
+```
+struct device *device_create(struct *class, struct device *parent, dev_t dev, void * drvdata, const char *fmt, ...);
+
+class – pointer to the struct class that this device should be registered to
+parent – pointer to the parent struct device of this new device, if any
+devt – the dev_t for the char device to be added
+drvdata – the data to be added to the device for callbacks
+fmt – string for the device’s name
+... – variable arguments
+```
+Note, that you can destroy the device using device_destroy().
+```
+void device_destroy (struct class * class, dev_t devt);
+```
+
 ## References
 * [Linux Device Drivers 3](https://www.oreilly.com/library/view/understanding-the-linux/0596005652/apbs03.html#:~:text=A%20user%20can%20link%20a,in%20the%20system%20directory%20tree)
 * [init and exit macros](https://fastbitlab.com/linux-device-driver-programming-lecture-18-__init-and-__exit-macros/)

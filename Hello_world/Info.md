@@ -123,7 +123,64 @@ struct kernel_param_ops
 In this S_I is common and R=read , W=write, X=execute
 
 
+## Major and Minor number
 
+The major number and minor number tell the kernel how to access the device. A common major number
+is assigned to all devices that are being controlled by the same device driver. The minor number
+helps to distinguish between the exact device type/controller using the same device driver.
+```
+# Command used to create the entry manually in devfs
+mknod /dev/file_entry c 254 0
+```
+* The combined major and minor cancatenated resides in the files i_rdev of the inode structure.
+* dev_t and kdev_t are the data types declared to use hold the device numbers.
+
+### Allocating Major and Minor numbers
+
+1. Statically allocating
+2. Dynamically allocating
+
+#### Statically allocating
+```
+# Create the Major and Minor number using the MKDEV structure
+MKDEV(int major,int minor)
+
+# Individual functions to get the Major and Minor numbers
+MAJOR(dev_t dev)
+MINOR(dev_t dev)
+
+# Register the char driver
+int register_chrdev_region(dev_t first, unsigned int count, char *name);
+```
+* In the registering functions:
+    * first is the beginning device number of the range you would like to allocate.
+    * count is the total number of contiguous device numbers you are requesting.
+    * name is the name of the device that should be associated with this number range; it will
+      appear in /proc/devices and sysfs.
+    * The return value from register_chrdev_region will be 0 if the allocation was successfully performed. 
+
+**Example:**
+```
+dev_t dev = MKDEV(235, 0);
+
+register_chrdev_region(dev, 1, "Embetronicx_Dev");
+```
+
+#### Dynamically allocating
+```
+int alloc_chrdev_region(dev_t *dev, unsigned int firstminor, unsigned int count, char *name);
+```
+* In the above function:
+    * dev is an output-only parameter that will, on successful completion, hold the first number in your allocated range.
+    * firstminor should be the requested first minor number to use; it is usually 0.
+    * count is the total number of contiguous device numbers you are requesting.
+    * name is the name of the device that should be associated with this number range; it will appear in /proc/devices and sysfs.
+
+### Unregistering the Driver
+
+```
+void unregister_chrdev_region(dev_t first, unsigned int count);
+```
 
 ## References
 * [Linux Device Drivers 3](https://www.oreilly.com/library/view/understanding-the-linux/0596005652/apbs03.html#:~:text=A%20user%20can%20link%20a,in%20the%20system%20directory%20tree)

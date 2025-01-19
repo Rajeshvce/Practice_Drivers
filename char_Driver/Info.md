@@ -104,4 +104,68 @@ struct file_operations {
 };
 ```
 
+## Some important functions
 
+### kmalloc
+
+* kmalloc function is used to allocate the memory in kernel space 
+```
+#include <linux/slab.h>
+
+void *kmalloc(size_t size, gfp_t flags);
+```
+
+Arguments:
+* size  - how many bytes of memory are required
+* flags - The type of memory to allocate
+    * GFP_USER – Allocate memory on behalf of the user. May sleep.
+    * GFP_KERNEL – Allocate normal kernel ram. May sleep.
+    * GFP_ATOMIC – Allocation will not sleep. May use emergency pools. For example, use this inside interrupt handler.
+    * GFP_HIGHUSER – Allocate pages from high memory.
+    * GFP_NOIO – Do not do any I/O at all while trying to get memory.
+    * GFP_NOFS – Do not make any fs calls while trying to get memory.
+    * GFP_NOWAIT – Allocation will not sleep.
+    * __GFP_THISNODE – Allocate node-local memory only.
+    * GFP_DMA – Allocation is suitable for DMA. Should only be used for kmalloc caches. Otherwise, use a slab created with SLAB_DMA.
+    * __GFP_COLD – Request cache-cold pages instead of trying to return cache-warm pages.
+    * __GFP_HIGH – This allocation has high priority and may use emergency pools.
+    * __GFP_NOFAIL – Indicate that this allocation is in no way allowed to fail (think twice before using).
+    * __GFP_NORETRY – If memory is not immediately available, then give up at once.
+    * __GFP_NOWARN – If allocation fails, don’t issue any warnings.
+    * __GFP_REPEAT – If allocation fails initially, try once more before failing.
+
+### kfree()
+
+* This is like a free() function in the userspace. This is used to free the previously allocated memory.
+```
+void kfree(const void *objp)
+```
+Arguments:
+* *objp - pointer returned by kmalloc
+
+### copy_from_user()
+
+* This function is used to Copy a block of data from user space (Copy data from kernel space to user space)
+```
+unsigned long copy_to_user(const void __user *to, const void *from, unsigned long n);
+```
+Arguments:
+* to   - Destination address, in the user space
+* from - The source address in the kernel space
+* n    - Number of bytes to copy 
+
+Returns  number of bytes that could not be copied. On success, this will be zero
+
+### copy_to_user()
+
+* The function is used to Copy a block of data into userspace (Copy data from kernel 
+  space to user space)
+```
+unsigned long copy_to_user(const void __user *to, const void *from, unsigned long  n);
+```
+Arguments:
+* to   - Destination address, in the user space
+* from - The source address in the kernel space
+* n    - Number of bytes to copy
+
+Returns number of bytes that could not be copied. On success, this will be zero   
